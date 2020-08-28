@@ -199,9 +199,9 @@ if args.recalculate_time_in_description:
 
 print('Processing {} frames...'.format(frames))
 command = [ 'ffmpeg', '-i', args.path, '-f', 'image2pipe', '-pix_fmt', 'rgb24', '-vcodec', 'rawvideo', '-' ]
-decoder = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-decoder.stderr.close()
+devnull = open(os.devnull, "wb")
+decoder = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=devnull)
 
 video_track = tempfile.NamedTemporaryFile(delete=False)
 video_track.close()
@@ -296,7 +296,8 @@ encoder.stdin.close()
 encoder.wait()
 assert encoder.returncode == 0
 
-decoder.terminate()
+decoder.wait()
+assert decoder.returncode == 0
 
 name, extension = os.path.splitext(args.path)
 command = [ 'ffmpeg', '-f', 'mp4', '-i', video_track.name, '-f', 'wav', '-i', audio_track.name ]
